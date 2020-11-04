@@ -113,7 +113,6 @@ export default {
             let data = this.loginForm
             let {data:res} = await this.$http.post('/login',data)
             if(res.code==200){
-                console.log(res);
                 this.$message.success('登录成功')
                 sessionStorage.setItem("id", res.id)
                 sessionStorage.setItem("username", res.username)
