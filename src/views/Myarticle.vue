@@ -28,7 +28,7 @@
                 </el-table-column>
                 <el-table-column prop="userid" label="操作">
                     <template slot-scope="scope">
-                        <el-button @click="readArticle(scope.row.id)" size="mini">阅读</el-button>
+                        <el-button @click="readArticle(scope.row)" size="mini">阅读</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -100,8 +100,9 @@ export default {
                 this.$message.error('获取失败')
             }
         },
-        readArticle(id){
-            this.$router.push(`/home/readarticle/${id}`)
+        readArticle(item){
+            this.$http.get(`/addviews/${item.id}/${item.views}`)
+            this.$router.push(`/home/readarticle/${item.id}`)
         }
     }
 }

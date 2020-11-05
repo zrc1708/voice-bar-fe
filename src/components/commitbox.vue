@@ -4,10 +4,9 @@
         <div class="article-box-content">
             <img :src="fileUrl" alt="">
             <div class="article-box-content-right">
-                <span>主题：{{title}}</span>
-                <span>发帖人：{{author}}</span>
-                <span>发帖人注册时间：{{authorbirth | toMydate}}</span>
-                <span>发帖时间：{{posttime | toMydate}}</span>
+                <span>评论人：{{author}}</span>
+                <span>评论人注册时间：{{authorbirth | toMydate}}</span>
+                <span>评论时间：{{posttime | toMydate}}</span>
             </div>
         </div>
         <el-input
@@ -22,7 +21,7 @@
 
 <script>
 export default {
-    props:['boxTitle','filename','title','author','authorbirth','posttime','content','voiceName'],
+    props:['boxTitle','filename','author','authorbirth','posttime','content','voiceName'],
     data(){
         return{
 
@@ -70,7 +69,7 @@ export default {
     display: flex;
     img{
         padding: 10px;
-        width: 130px;
+        width: 100px;
         grid-row-end: span 4;
     }
     .article-box-content-right{

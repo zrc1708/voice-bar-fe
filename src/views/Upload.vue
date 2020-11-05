@@ -1,9 +1,12 @@
 <template>
     <el-card class="my-card">
         <input type="file" ref="file" @change="checkField($event)" accept="image/*" v-show="false"/> 
-        <el-button type="primary" @click="choose">选择图片</el-button>
-        <el-button type="primary" @click="upload">上传图片</el-button>
-        <div class="show-cropperbox" >
+        <el-row class="my-row">
+            <el-button type="primary" @click="choose">选择图片</el-button>
+            <el-button type="primary" @click="upload" :disabled='cantUpload'>上传图片</el-button>
+        </el-row>
+
+        <div class="show-cropperbox" v-show="imageSrc">
             <div class="cropperbox">
                 <vueCropper
                     ref="cropper"
@@ -32,6 +35,13 @@
                 </div>
             </div>
         </div>
+
+        <el-row class="my-row">
+            <span class="avatar-box">
+                <img :src="imageName" alt="" v-if="imageName">
+            </span>
+            <span v-if="!imageName">您还未上传过头像</span>
+        </el-row>
     </el-card>
 </template>
 <script>
@@ -43,29 +53,34 @@ export default {
     },
     data(){
         return{
-            file:'',
+            // 选择的文件
             imageSrc:'',
             showCopperBox:false,
             previews:{},
             previewStyle3:{},
+            // 展示的头像的文件名
+            showImageName:'',
+            // 展示的头像的URL
+            imageName:'',
+            cantUpload:true,
         }
+    },
+    mounted(){
+        this.getImage()
     },
     methods:{
         choose(){
             this.$refs.file.click()
         },
         checkField(e){
-            // window.URL = window.URL || window.webkitURL;
             let file = this.$refs.file.files[0]
             // fileReader接口，用于异步读取文件数据
             var reader = new FileReader()
             reader.readAsDataURL(file)
             reader.onload = e => {
-                // this.imageSrc = window.URL.createObjectURL(this.file)  //转为blob格式
                 this.imageSrc = e.target.result
+                this.cantUpload = false
             }
-            // this.file = file
-            // this.imageSrc = window.URL.createObjectURL(this.file)
             this.showCopperBox = true
         },
         realTime(data) {
@@ -83,19 +98,40 @@ export default {
             this.previews = data;
         },
         upload(){
-            this.$refs.cropper.getCropBlob(async (data) => {
-                console.log(data)  
-                
+            this.$refs.cropper.getCropBlob(async (data) => {                
                 const formData = new FormData()
                 formData.append("file",data)
+                formData.append("id",sessionStorage.getItem('id'))
+                let haveAvatar = this.imageName ? true:false
+                formData.append('haveAvatar',haveAvatar)
+                formData.append('oldFileName',this.showImageName)
+
                 const {data:res} = await this.$http.post("uploadimage",formData)
                 if(res.code==200){
+                    this.imageSrc = ''
+                    this.showImageName = res.filename
+                    this.imageName = `http://127.0.0.1:8877/getimage/${res.filename}`
+                    this.cantUpload = true
                     this.$message.success('图片上传成功')
-                    
+
                 }else{
                     this.$message.error('图片上传成功')
                 }
             })
+        },
+        // 获取用户头像
+        async getImage(){
+            let id = sessionStorage.getItem('id')
+            let {data:res} = await this.$http.get(`/getimagename/${id}`)
+
+            if(res.code==200){
+                this.showImageName = res.rs.filename
+                this.imageName = `http://127.0.0.1:8877/getimage/${res.rs.filename}`
+            }else if(res.code==210){
+                return
+            }else{
+                this.$message.error('获取失败')
+            }
         }
     }
 }
@@ -119,5 +155,13 @@ export default {
     margin-top: auto;
     border-radius: 50%;
     overflow: hidden;
+}
+.avatar-box{
+    border: 1px solid #eeeeee;
+    display: inline-block;
+    img{
+        display: block;
+        width: 150px;
+    }
 }
 </style>
