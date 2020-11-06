@@ -4,24 +4,36 @@
         <div class="article-box-content">
             <img :src="fileUrl" alt="">
             <div class="article-box-content-right">
-                <span>评论人：{{author}}</span>
-                <span>评论人注册时间：{{authorbirth | toMydate}}</span>
+                <span v-if="author">评论人：{{author}}</span>
+                <span v-if="commitarticletitle">
+                    评论文章：<el-link class="my-link" @click="readarticle" type="primary">{{commitarticletitle}}</el-link>
+                </span>
+                <span v-if="authorbirth">评论人注册时间：{{authorbirth | toMydate}}</span>
                 <span>评论时间：{{posttime | toMydate}}</span>
+                <span v-if="updatecommit">
+                    <el-link type="primary" @click="showUpdateCommit">评论编辑</el-link>
+                </span>
             </div>
         </div>
-        <el-input
-            class="my-showcontent-input"
-            type="textarea"
-            disabled
-            :autosize="{ minRows: 1, maxRows: 10}"
-            v-model="content"></el-input>
-        <audio class="audio" controls :src="voiceUrl"></audio>
+        <el-row>
+            <el-input
+                class="my-showcontent-input"
+                type="textarea"
+                disabled
+                :autosize="{ minRows: 1, maxRows: 10}"
+                v-model="content"></el-input>
+        </el-row>
+        <el-row class="footbox">
+            <audio class="audio" controls :src="voiceUrl"></audio>
+            <span class="preview" v-if="showpraise" @click="addPraise">赞：{{praise}}</span>
+        </el-row>
     </div>
 </template>
 
 <script>
 export default {
-    props:['boxTitle','filename','author','authorbirth','posttime','content','voiceName'],
+    props:['boxTitle','filename','author','authorbirth','posttime','id' ,'userid',
+            'content','voiceName','commitarticletitle','commitarticleid','commitarticleviews','updatecommit','praise','showpraise'],
     data(){
         return{
 
@@ -48,12 +60,34 @@ export default {
                 return ''
             }
         }
+    },
+    methods:{
+        readarticle(){
+            let id = this.commitarticleid
+            let views = this.commitarticleviews
+            this.$http.get(`/addviews/${id}/${views}`)
+            this.$router.push(`/home/readarticle/${id}`)
+        },
+        showUpdateCommit(){
+            this.$emit('showUpdateCommit',{
+                id:this.id,
+                content:this.content,
+                voiceName:this.voiceName,
+                userid:this.userid})
+        },
+        addPraise(){
+            this.$emit('praiseClick',{
+                id:this.id,
+                praise:this.praise
+            })
+        }
     }
 }
 </script>
 
 <style lang="less" scoped>
 .articlebox{
+    font-size: 14px;
     border-radius: 4px;
     border: 1px solid #EBEEF5;
     background-color: #FFF;
@@ -67,9 +101,10 @@ export default {
 }
 .article-box-content{
     display: flex;
+    margin-bottom: -10px;
     img{
         padding: 10px;
-        width: 100px;
+        width: 90px;
         grid-row-end: span 4;
     }
     .article-box-content-right{
@@ -82,7 +117,24 @@ export default {
     background-color: #f1f3f4;
     border-radius: 4px;
     margin-left: 10px;
-    margin-bottom: 5px;
+}
+.my-link{
+    transform: translateY(-2px);
+}
+.footbox{
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.preview{
+    display: inline-block;
+    height: 30px;
+    background-color: #f1f3f4;
+    margin-left: 15px;
+    border-radius: 3px;
+    padding: 0 10px;
+    line-height: 30px;
+    cursor: pointer;
 }
 
 </style>

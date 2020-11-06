@@ -32,7 +32,7 @@
                             <i class="el-icon-upload2"></i>
                             <span slot="title">上传头像</span>
                         </el-menu-item>
-                        <el-menu-item index="/home/allusers">
+                        <el-menu-item index="/home/allusers" v-if="isadmin">
                             <i class="el-icon-document"></i>
                             <span slot="title">用户管理</span>
                         </el-menu-item>
@@ -60,6 +60,11 @@ export default {
     },
     created(){
         this.defaultActive = this.$router.history.current.path
+    },
+    computed:{
+        isadmin(){
+            return sessionStorage.getItem('isadmin')
+        }
     },
     methods:{
         

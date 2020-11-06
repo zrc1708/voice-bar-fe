@@ -10,19 +10,24 @@
                 <span>发帖时间：{{posttime | toMydate}}</span>
             </div>
         </div>
-        <el-input
-            class="my-showcontent-input"
-            type="textarea"
-            disabled
-            :autosize="{ minRows: 1, maxRows: 10}"
-            v-model="content"></el-input>
-        <audio class="audio" controls :src="voiceUrl"></audio>
+        <el-row>
+            <el-input
+                class="my-showcontent-input"
+                type="textarea"
+                disabled
+                :autosize="{ minRows: 1, maxRows: 10}"
+                v-model="content"></el-input>
+        </el-row>
+        <el-row class="footbox">
+            <audio class="audio" controls :src="voiceUrl"></audio>
+            <span class="preview" v-if="showpraise" @click="addPraise">赞：{{praise}}</span>
+        </el-row>
     </div>
 </template>
 
 <script>
 export default {
-    props:['boxTitle','filename','title','author','authorbirth','posttime','content','voiceName'],
+    props:['boxTitle','filename','title','author','authorbirth','posttime','content','voiceName','praise','showpraise'],
     data(){
         return{
 
@@ -48,6 +53,13 @@ export default {
             }else{
                 return ''
             }
+        }
+    },
+    methods:{
+        addPraise(){
+            this.$emit('praiseClick',{
+                praise:this.praise
+            })
         }
     }
 }
@@ -83,7 +95,20 @@ export default {
     background-color: #f1f3f4;
     border-radius: 4px;
     margin-left: 10px;
-    margin-bottom: 5px;
 }
-
+.footbox{
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.preview{
+    display: inline-block;
+    height: 30px;
+    background-color: #f1f3f4;
+    margin-left: 15px;
+    border-radius: 3px;
+    padding: 0 10px;
+    line-height: 30px;
+    cursor: pointer;
+}
 </style>

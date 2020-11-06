@@ -114,6 +114,8 @@ export default {
             let {data:res} = await this.$http.post('/login',data)
             if(res.code==200){
                 this.$message.success('登录成功')
+                // 更新用户登录时间
+                this.$http.post('/updatelogintime',{id:res.id})
                 sessionStorage.setItem("id", res.id)
                 sessionStorage.setItem("username", res.username)
                 sessionStorage.setItem("isadmin", res.isadmin)
