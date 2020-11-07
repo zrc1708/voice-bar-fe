@@ -2,13 +2,16 @@
     <div class="login">
         <div class="loginbox">
             <p class="title">CSI语音技术吧</p>
-            <el-form  v-show="showLogin" ref="loginForm" :model="loginForm" label-width="80px" class="form">
-                <el-form-item label="用户名">
+            <el-form  v-show="showLogin" ref="loginForm" :rules="rule1" :model="loginForm" label-width="80px" class="form">
+                <el-form-item label="用户名" prop="username">
                     <el-input v-model="loginForm.username"></el-input>
                 </el-form-item>
-                <el-form-item label="密码">
+                <el-form-item label="密码" prop="password">
                     <el-input v-model="loginForm.password" show-password></el-input>
                 </el-form-item>
+                <el-row class="my-row row">
+                    <el-checkbox v-model="checked">记住我</el-checkbox>
+                </el-row>
                 <el-form-item>
                     <el-button type="primary" @click="onSubmit">立即登录</el-button>
                     <el-button @click="showLogin = false">注册</el-button>
@@ -16,16 +19,16 @@
             </el-form>
             <!-- 注册表单 -->
             <el-form  v-show="!showLogin" ref="registerForm" :rules="rules" :model="registerForm" label-width="80px" class="form">
-                <el-form-item label="用户名">
+                <el-form-item label="用户名" prop="username">
                     <el-input v-model="registerForm.username"></el-input>
                 </el-form-item>
-                <el-form-item label="密码">
+                <el-form-item label="密码" prop="password">
                     <el-input v-model="registerForm.password" show-password></el-input>
                 </el-form-item>
                 <el-form-item label="确认密码" prop="password2">
                     <el-input v-model="registerForm.password2" show-password></el-input>
                 </el-form-item>
-                <el-form-item label="性别">
+                <el-form-item label="性别" prop="sex">
                     <el-select v-model="registerForm.sex" class="select" placeholder="请选择性别">
                         <el-option label="男" value="0"></el-option>
                         <el-option label="女" value="1"></el-option>
@@ -81,6 +84,17 @@ export default {
                 callback();
             }
         };
+        var checkusername = async (rule, value, callback) => {
+            if (value === '') {
+                callback(new Error('请输入用户名'));
+            } 
+            let {data:res} = await this.$http.get(`/searchusername/${value}`)
+            if(res.rs.length>0){
+                callback(new Error('该用户名已存在'));
+            }else{
+                callback();
+            }
+        };
         return{
             showLogin:true,
             loginForm:{
@@ -95,34 +109,73 @@ export default {
                 age:'',
                 email:''
             },
+            rule1: {
+                username: [
+                    { required: true, message: '用户名不能为空', trigger: 'change' }
+                ],
+                password: [
+                    { required: true, message: '密码不能为空', trigger: 'change' }
+                ],
+            },
             rules: {
+                username: [
+                    { required: true, validator: checkusername, trigger: 'blur' }
+                ],
+                password: [
+                    { required: true, message: '密码不能为空', trigger: 'change' }
+                ],
+                sex: [
+                    { required: true, message: '性别不能为空', trigger: 'change' }
+                ],
                 password2: [
-                    { validator: validatePass, trigger: 'blur' }
+                    { required: true, validator: validatePass, trigger: 'blur' }
                 ],
                 age: [
-                    { validator: checkAge, trigger: 'blur' }
+                    { required: true, validator: checkAge, trigger: 'blur' }
                 ],
                 email:[
-                    { validator: checkEmail, trigger: 'blur' }
+                    { required: true, validator: checkEmail, trigger: 'blur' }
                 ]
-            }
+            },
+            checked:false
+        }
+    },
+    created(){
+        if(localStorage.getItem('username')){
+            this.loginForm.username = localStorage.getItem('username')
+            this.loginForm.password = localStorage.getItem('password')
         }
     },
     methods:{
         async onSubmit() {
-            let data = this.loginForm
-            let {data:res} = await this.$http.post('/login',data)
-            if(res.code==200){
-                this.$message.success('登录成功')
-                // 更新用户登录时间
-                this.$http.post('/updatelogintime',{id:res.id})
-                sessionStorage.setItem("id", res.id)
-                sessionStorage.setItem("username", res.username)
-                sessionStorage.setItem("isadmin", res.isadmin)
-                this.$router.push('/home')
-            }else{
-                this.$message.error('登录失败')
-            }
+            // loginForm
+            this.$refs.loginForm.validate(async (valid) => {
+                if (valid) {
+                    let data = this.loginForm
+                    let {data:res} = await this.$http.post('/login',data)
+                    if(res.code==200){
+                        this.$message.success('登录成功')
+                        // 更新用户登录时间
+                        this.$http.post('/updatelogintime',{id:res.id})
+                        sessionStorage.setItem("id", res.id)
+                        sessionStorage.setItem("username", res.username)
+                        sessionStorage.setItem("isadmin", res.isadmin)
+                        if(this.checked){
+                            localStorage.setItem('username',res.username)
+                            localStorage.setItem('password',this.loginForm.password)
+                        }else{
+                            localStorage.removeItem('username')
+                            localStorage.removeItem('password')
+                        }
+                        this.$router.push('/home')
+                    }else{
+                        this.$message.error('用户名或密码错误')
+                    }
+                } else {
+                    this.$message.error('信息有误')
+                    return false;
+                }
+            });
         },
         onRegister(formName) {
             this.$refs[formName].validate(async (valid) => {
@@ -174,5 +227,8 @@ export default {
 }
 .select{
     width: 100%;
+}
+.row{
+    margin-left: 80px;
 }
 </style>

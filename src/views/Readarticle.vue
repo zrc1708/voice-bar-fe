@@ -37,19 +37,23 @@
             :key="item.id"
             boxTitle='评论'
             :id='item.id'
+            :userid='item.userid'
             :showpraise="true"
+            :deletecommit='showDeletecommit'
             :praise="item.praise"
             :filename='item.filename'
             :author="item.username"
             :authorbirth="item.birthtime"
+            :commitarticleid='item.articleid'
             :posttime="item.posttime"
             :content="item.content"
             :voiceName="item.voice"
-            @praiseClick="addPraise"></my-commitbox>
+            @praiseClick="addPraise"
+            @showDeleteCommit='showDeleteCommit'></my-commitbox>
 
 
         <el-dialog
-            title="回复"
+            title="评论"
             :visible.sync="dialogVisible"
             width="70%">
 
@@ -78,6 +82,11 @@ export default {
     components:{
       'my-articlebox':articlebox,
       'my-commitbox':commitbox
+    },
+    computed:{
+        showDeletecommit(){
+            return sessionStorage.getItem('isadmin')==1
+        }
     },
     data(){
         return{
@@ -122,6 +131,10 @@ export default {
         },
 
         async publish(){
+            if(this.form.content==''){
+                this.$message.error('评论内容不能为空')
+                return
+            }
             let data = this.form
             data.userid = sessionStorage.getItem('id')
             data.articleid = this.myArticle.id
@@ -181,6 +194,26 @@ export default {
 
         showUpdateCommit(item){
             console.log(item);
+        },
+
+        // 删除评论
+        showDeleteCommit(item){
+            // console.log(item);
+            this.$confirm(`此操作将删除此评论, 是否继续?`, '警告', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消'
+            }).then(async() => {
+                let {data:res} = await this.$http.post('/deletecommit',item)
+                if(res.code==200){
+                    this.$message.success('删除成功')
+                }else{
+                    this.$message.error('删除失败')
+                }
+                this.hotest = null
+                await this.getCommit()
+                this.getHostest()
+                
+            }).catch(() => {});
         }
     }
 }

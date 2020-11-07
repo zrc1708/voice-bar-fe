@@ -63,7 +63,7 @@ export default {
     },
     computed:{
         isadmin(){
-            return sessionStorage.getItem('isadmin')
+            return sessionStorage.getItem('isadmin')==1
         }
     },
     methods:{

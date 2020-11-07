@@ -108,6 +108,14 @@ export default {
             }
         },
         async publish(){
+            if(this.form.title==''){
+                this.$message.error('标题不能为空')
+                return
+            }
+            if(this.form.content==''){
+                this.$message.error('内容不能为空')
+                return
+            }
             let data = this.form
             data.id = sessionStorage.getItem('id')
 

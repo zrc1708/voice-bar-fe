@@ -33,6 +33,7 @@
                 <el-table-column label="操作">
                     <template slot-scope="scope">
                         <el-button @click="readArticle(scope.row)" size="mini">阅读</el-button>
+                        <el-button @click="deleteArticle(scope.row)" size="mini" v-if="isadmin">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -84,6 +85,11 @@ export default {
             showpage:true
         }
     },
+    computed:{
+        isadmin(){
+            return sessionStorage.getItem('isadmin')==1
+        }
+    },
     filters: {
         toMydate: function (value) {
             if (!value) return '-'
@@ -117,6 +123,14 @@ export default {
             // console.log(this.dataList);
         },
         async publish(){
+            if(this.form.title==''){
+                this.$message.error('标题不能为空')
+                return
+            }
+            if(this.form.content==''){
+                this.$message.error('内容不能为空')
+                return
+            }
             let data = this.form
             data.id = sessionStorage.getItem('id')
 
@@ -156,6 +170,23 @@ export default {
             }else{
                 this.$message.error('获取失败')
             }
+        },
+        deleteArticle(item){
+            console.log(item);
+            this.$confirm(`此操作将删除此文章, 是否继续?`, '警告', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消'
+            }).then(async() => {
+                let {data:res} = await this.$http.post('/admdeletearticle',item)
+                if(res.code==200){
+                    this.$message.success('删除成功')
+                }else{
+                    this.$message.error('删除失败')
+                }
+                this.getTotal()
+                this.getAllArticle(1)
+                
+            }).catch(() => {});
         }
     }
 }

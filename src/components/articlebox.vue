@@ -95,6 +95,7 @@ export default {
     background-color: #f1f3f4;
     border-radius: 4px;
     margin-left: 10px;
+    height: 30px;
 }
 .footbox{
     display: flex;

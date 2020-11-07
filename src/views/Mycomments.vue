@@ -8,6 +8,7 @@
             :id='item.id'
             :userid='item.userid'
             :updatecommit='true'
+            :deletecommit='true'
             :commitarticletitle='item.title'
             :commitarticleid='item.articleid'
             :commitarticleviews='item.views'
@@ -15,7 +16,8 @@
             :posttime="item.posttime"
             :content="item.content"
             :voiceName="item.voice"
-            @showUpdateCommit="showUpdateCommit"></my-commitbox>
+            @showUpdateCommit="showUpdateCommit"
+            @showDeleteCommit='showDeleteCommit'></my-commitbox>
 
         <el-row class="my-row">
             <el-pagination
@@ -103,7 +105,7 @@ export default {
             let data = this.form
             let {data:res} = await this.$http.post(`/updatecommit`,data)
             if(res.code==200){
-                this.getMyCommit()
+                this.getMyCommit(1)
                 this.dialogVisible = false
                 this.$message.success('编辑评论成功')
             }else{
@@ -116,6 +118,24 @@ export default {
         },
         handleCurrentChange(val) {
             this.getMyCommit(val)
+        },
+
+        // 删除评论
+        showDeleteCommit(item){
+            console.log(item);
+            this.$confirm(`此操作将删除此评论, 是否继续?`, '警告', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消'
+            }).then(async() => {
+                let {data:res} = await this.$http.post('/deletecommit',item)
+                if(res.code==200){
+                    this.$message.success('删除成功')
+                }else{
+                    this.$message.error('删除失败')
+                }
+                this.getTotal()
+                this.getMyCommit(1)
+            }).catch(() => {});
         }
     }
 }

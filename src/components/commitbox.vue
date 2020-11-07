@@ -13,6 +13,9 @@
                 <span v-if="updatecommit">
                     <el-link type="primary" @click="showUpdateCommit">评论编辑</el-link>
                 </span>
+                <span v-if="deletecommit">
+                    <el-link type="danger" @click="showUpdateDelete">删除评论</el-link>
+                </span>
             </div>
         </div>
         <el-row>
@@ -33,7 +36,9 @@
 <script>
 export default {
     props:['boxTitle','filename','author','authorbirth','posttime','id' ,'userid',
-            'content','voiceName','commitarticletitle','commitarticleid','commitarticleviews','updatecommit','praise','showpraise'],
+            'content','voiceName','commitarticletitle','commitarticleid',
+            'commitarticleviews','updatecommit','praise','showpraise',
+            'deletecommit'],
     data(){
         return{
 
@@ -80,6 +85,14 @@ export default {
                 id:this.id,
                 praise:this.praise
             })
+        },
+        showUpdateDelete(){
+            this.$emit('showDeleteCommit',{
+                id:this.id,
+                articleid:this.commitarticleid,
+                content:this.content,
+                voiceName:this.voiceName,
+                userid:this.userid})
         }
     }
 }
@@ -117,6 +130,7 @@ export default {
     background-color: #f1f3f4;
     border-radius: 4px;
     margin-left: 10px;
+    height: 30px;
 }
 .my-link{
     transform: translateY(-2px);
